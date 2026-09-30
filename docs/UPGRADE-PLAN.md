@@ -2,7 +2,7 @@
 
 ## Current state
 
-Score: 4/10 (was 1/10) — tested pure-Kotlin domain core and honest CI; the
+Score: 5/10 (was 4/10) — tested pure-Kotlin domain core and honest CI; the
 Compose UI is still a placeholder and the Android build is unverified locally.
 
 ## Backlog
@@ -16,7 +16,7 @@ Compose UI is still a placeholder and the Android build is unverified locally.
 - P2: Compose UI tests (`androidx.compose.ui:ui-test-junit4`) for the main flow.
 - P2: Pin `distributionSha256Sum` in `gradle-wrapper.properties`.
 
-## Done in this pass
+## Done in this pass (pass 1)
 
 - Added `core/` (included Gradle build) with the app's domain logic and 4 unit tests.
 - Committed the Gradle wrapper (8.10.2).
@@ -25,3 +25,9 @@ Compose UI is still a placeholder and the Android build is unverified locally.
   target 17; added `com.google.android.material` for the manifest theme.
 - CI: removed `|| true`; separate `core` and `android` jobs.
 - README now states what is verified and what is not.
+
+## Done in this pass (pass 2)
+
+- Fixed `normalizePath`: for URLs with no path, a `/` inside the query or fragment (`https://x.com?next=/admin`) became the page path; protocol-relative URLs (`//cdn.x.com/blog`) kept the host as a path segment.
+- 6 more edge-case tests (10 total): URL/host corners, empty and slash-only paths, half-open windows, trending with new/vanished pages, compact-number boundaries. Verified with `./gradlew -p core test --offline`.
+- Still not verified locally: the Compose `app/` (no Android SDK; dl.google.com is blocked here).

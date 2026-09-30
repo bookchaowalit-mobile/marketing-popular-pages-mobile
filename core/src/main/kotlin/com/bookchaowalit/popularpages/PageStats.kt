@@ -18,10 +18,16 @@ object PageStats {
      */
     fun normalizePath(raw: String): String {
         var s = raw.trim()
+        // Host part: after "scheme://" or a protocol-relative "//", up to the first '/', '?' or '#'.
         val scheme = s.indexOf("://")
-        if (scheme >= 0) {
-            val slash = s.indexOf('/', scheme + 3)
-            s = if (slash < 0) "/" else s.substring(slash)
+        val hostStart = when {
+            scheme >= 0 -> scheme + 3
+            s.startsWith("//") -> 2
+            else -> -1
+        }
+        if (hostStart >= 0) {
+            val end = s.indexOfAny(charArrayOf('/', '?', '#'), hostStart)
+            s = if (end < 0) "/" else s.substring(end)
         }
         s = s.substringBefore('#').substringBefore('?').lowercase()
         s = "/" + s.split('/').filter { it.isNotEmpty() }.joinToString("/")
