@@ -61,7 +61,7 @@ class PageStatsEdgeCaseTest {
         assertEquals("1.1K", PageStats.compact(1_050))
         assertEquals("999.9K", PageStats.compact(999_949))
         assertEquals("1M", PageStats.compact(999_950))
-        assertEquals("2147.5M", PageStats.compact(Int.MAX_VALUE))
+        assertEquals("2.1B", PageStats.compact(Int.MAX_VALUE))
         assertFailsWith<IllegalArgumentException> { PageStats.compact(-1) }
     }
 }

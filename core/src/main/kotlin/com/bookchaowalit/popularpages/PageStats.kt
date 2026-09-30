@@ -19,9 +19,11 @@ object PageStats {
     fun normalizePath(raw: String): String {
         var s = raw.trim()
         // Host part: after "scheme://" or a protocol-relative "//", up to the first '/', '?' or '#'.
-        val scheme = s.indexOf("://")
+        // Only a real "scheme://" prefix counts: a URL inside the query or path
+        // ("/login?next=https://x.com/admin") must not be mistaken for the host.
+        val scheme = SCHEME.find(s)?.value?.length ?: -1
         val hostStart = when {
-            scheme >= 0 -> scheme + 3
+            scheme >= 0 -> scheme
             s.startsWith("//") -> 2
             else -> -1
         }
@@ -66,7 +68,9 @@ object PageStats {
             .take(limit)
     }
 
-    /** Compact counter label: 999 -> "999", 1_250 -> "1.3K", 2_000_000 -> "2M". */
+    private val SCHEME = Regex("^[A-Za-z][A-Za-z0-9+.-]*://")
+
+    /** Compact counter label: 999 -> "999", 1_250 -> "1.3K", 2_000_000 -> "2M", 1_500_000_000 -> "1.5B". */
     fun compact(n: Int): String {
         require(n >= 0)
         fun one(value: Double, suffix: String): String {
@@ -77,7 +81,8 @@ object PageStats {
         return when {
             n < 1_000 -> n.toString()
             n < 999_950 -> one(n / 1_000.0, "K")
-            else -> one(n / 1_000_000.0, "M")
+            n < 999_950_000 -> one(n / 1_000_000.0, "M")
+            else -> one(n / 1_000_000_000.0, "B")
         }
     }
 }

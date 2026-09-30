@@ -31,3 +31,9 @@ Compose UI is still a placeholder and the Android build is unverified locally.
 - Fixed `normalizePath`: for URLs with no path, a `/` inside the query or fragment (`https://x.com?next=/admin`) became the page path; protocol-relative URLs (`//cdn.x.com/blog`) kept the host as a path segment.
 - 6 more edge-case tests (10 total): URL/host corners, empty and slash-only paths, half-open windows, trending with new/vanished pages, compact-number boundaries. Verified with `./gradlew -p core test --offline`.
 - Still not verified locally: the Compose `app/` (no Android SDK; dl.google.com is blocked here).
+
+## Done in this pass (pass 3)
+
+- Fixed `normalizePath` for relative paths carrying a URL: `/login?next=https://example.com/admin` was grouped as `/admin` (any `://` was taken as the scheme separator); only a leading `scheme://` now counts.
+- `compact` gained a `B` suffix: counts from 999,950,000 showed as "1000M" / "2147.5M" (the pass-2 pin was updated to "2.1B").
+- 3 tests (13 total; 2 fail on the old code), verified with `./gradlew -p core test --offline`. Half-up rounding of `compact` was brute-force checked against integer maths for 1K..3M (no float drift).
