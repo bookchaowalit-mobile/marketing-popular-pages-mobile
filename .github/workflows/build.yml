@@ -5,33 +5,56 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Toolchain pins: JDK 17 (Temurin) below; Gradle 8.10.2 through the committed
+# wrapper (distributionSha256Sum is checked); AGP / Kotlin versions in
+# build.gradle.kts. Every step is fail-closed: no `|| true` anywhere.
+env:
+  JAVA_VERSION: '17'
+
 jobs:
   core:
     name: Core domain logic (build + unit tests)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
+      # Tagged major (not SHA-pinned); also validates the committed wrapper jar.
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew -p core build --stacktrace
+      - name: Build and test core (no Android SDK needed)
+        run: ./gradlew -p core build --stacktrace
 
   android:
     name: Android app (assembleDebug)
     needs: core
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
       - uses: gradle/actions/setup-gradle@v4
-      # ubuntu-latest ships the Android SDK (ANDROID_HOME is preset).
-      - run: ./gradlew :app:assembleDebug --stacktrace
+      # ubuntu-24.04 ships the Android SDK (ANDROID_HOME is preset).
+      - name: Assemble debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+  security:
+    uses: bookchaowalit/platform-ci-workflows/.github/workflows/security.yml@87dc5e1c7e0416886a6371d5a101bb2ccba38edd # v1.1.1

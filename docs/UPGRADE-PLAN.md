@@ -14,7 +14,7 @@ Compose UI is still a placeholder and the Android build is unverified locally.
 - P1: Fetch aggregated views from the popular-pages backend (Retrofit/Ktor) with a fake for tests.
 - P1: Time-window picker (24h / 7d / 30d) and a pull-to-refresh list.
 - P2: Compose UI tests (`androidx.compose.ui:ui-test-junit4`) for the main flow.
-- P2: Pin `distributionSha256Sum` in `gradle-wrapper.properties`.
+- ~~P2: Pin `distributionSha256Sum` in `gradle-wrapper.properties`.~~ Done 2026-10-22.
 
 ## Done in this pass (pass 1)
 
